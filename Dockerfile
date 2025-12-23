@@ -18,11 +18,11 @@ RUN dotnet nuget add source \
 
 COPY . .
 RUN dotnet restore
-
-RUN dotnet publish Saas-Auth-Service/Saas-Auth-Service.csproj \
-    -c Release -o /app/publish
+RUN dotnet publish Saas-Auth-Service.csproj  -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Saas-Auth-Service.dll"]
+
+
