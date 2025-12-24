@@ -38,7 +38,6 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
-
 builder.Services.AddOpenApi();
 var app = builder.Build();
 
@@ -53,6 +52,13 @@ using (var scope = app.Services.CreateScope())
     app.UseSwagger();
     app.UseSwaggerUI();
 // }
+app.UseCors(builder =>
+{
+    builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+});
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
