@@ -69,8 +69,41 @@ namespace Saas_Auth_Service.Controller
             response.Message = SuccessMessages.ProjectCreationSuccess;
             return response;
         }
+
+        [HttpPost]
+        public GetAllProjects GetProjects(GetProjectRequest request)
+        {
+            var response = new GetAllProjects();
+            var userId = Convert.ToInt32(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            IQueryable<Project> query = _dbContext.Projects.AsQueryable();
+            if (!string.IsNullOrEmpty(request.ProjectName))
+            {
+                query = query.Where(x => EF.Functions.Like(x.Name, $"%{request.ProjectName}%"));
+            }
+            int pageNumber = request.PageNumber <= 0 ? 1 : request.PageNumber;
+            int skip = (pageNumber - 1) * request.RowsPerPage;
+            var projects = query.Skip(skip).Take(request.RowsPerPage).ToList();
+            response.Count = projects.Count;
+            foreach (var project in projects)
+            {
+                var projectDto = new ProjectResponse
+                {
+                    Id = project.Id,
+                    Name = project.Name,
+                    Description = project.Description,
+                    TeamMembers = project.TeamMembers.Select(tm => new UserResponse
+                    {
+                        Id = tm.Id,
+                        Username = tm.Username,
+                        Email = tm.Email,
+                    }).ToList(),
+                };
+                response.Projects.Add(projectDto);
+            }
+            return response;
+        }
         #endregion
-        
+
         #region private methods
         #endregion
     }
