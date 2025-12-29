@@ -166,7 +166,18 @@ namespace Saas_Auth_Service.Controller
         public Response CreateTask(CreateTaskRequest request)
         {
             var response = new Response();
-            
+            ProjectTask newTask = new()
+            {
+                AssignedTo = request.AssignedTo,
+                Name = request.Name,
+                Description = request.Description,
+                Type = request.Type,
+                Duration = request.Duration,
+                ProjectId = request.ProjectId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.ProjectTasks.Add(newTask);
+            _dbContext.SaveChanges();
             response.IsSuccess = true;
             response.Message = "Task created successfully.";
             return response;
