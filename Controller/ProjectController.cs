@@ -75,6 +75,7 @@ namespace Saas_Auth_Service.Controller
             _dbContext.Users.Find(project.CreatedById)!.CreatedProjects.Add(project);
             _dbContext.Projects.Add(project);
             _dbContext.SaveChanges();
+            _cacheService.Remove("GetProjectsAsync");
             response.IsSuccess = true;
             response.Message = SuccessMessages.ProjectCreationSuccess;
             return response;
@@ -83,9 +84,7 @@ namespace Saas_Auth_Service.Controller
         [HttpPost]
         public async Task<GetAllProjects> GetProjectsAsync(GetProjectRequest request)
         {
-            var keyRaw = JsonSerializer.Serialize(request);
-            var cacheKey = "projects:" + Convert.ToHexString(
-                SHA256.HashData(Encoding.UTF8.GetBytes(keyRaw)));
+            var cacheKey = "GetProjectsAsync";
 
             return await _cacheService.GetOrCreateAsync(cacheKey, async () =>
             {
@@ -126,6 +125,51 @@ namespace Saas_Auth_Service.Controller
                 return response;
 
             }, expirationInMinutes: 3);
+        }
+
+        [HttpGet("{projectId}")]
+        public async Task<GetProjectDetails> GetProjectByIdAsync(int projectId)
+        {
+            var cacheKey = $"GetProjectByIdAsync_{projectId}";
+
+            return await _cacheService.GetOrCreateAsync(cacheKey, async () =>
+            {
+                var project = await _dbContext.Projects
+                    .Include(p => p.TeamMembers)
+                    .FirstOrDefaultAsync(p => p.Id == projectId);
+
+                if (project == null)
+                {
+                    return null!;
+                }
+
+                var response = new GetProjectDetails
+                {
+                    Id = project.Id,
+                    Name = project.Name,
+                    Description = project.Description,
+                    StartDate = System.TimeZoneInfo.ConvertTimeFromUtc(project.StartDate,System.TimeZoneInfo.FindSystemTimeZoneById(project.TimeZone)),
+                    EndDate = System.TimeZoneInfo.ConvertTimeFromUtc(project.EndDate,System.TimeZoneInfo.FindSystemTimeZoneById(project.TimeZone)),
+                    TeamMembers = project.TeamMembers.Select(tm => new UserResponse
+                    {
+                        Id = tm.Id,
+                        Username = tm.Username,
+                        Email = tm.Email,
+                    }).ToList()
+                };
+                return response;
+
+            }, expirationInMinutes: 5);
+        }
+
+        [HttpPost]
+        public Response CreateTask(CreateTaskRequest request)
+        {
+            var response = new Response();
+            
+            response.IsSuccess = true;
+            response.Message = "Task created successfully.";
+            return response;
         }
         #endregion
 
