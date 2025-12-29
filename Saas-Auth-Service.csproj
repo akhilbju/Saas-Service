@@ -19,7 +19,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
-    <PackageReference Include="Saas.Shared.Lib" Version="1.0.3" />
+    <PackageReference Include="Saas.Shared.Lib" Version="1.0.4" />
      <!-- <ProjectReference Include="..\Saas-Shared-Lib\Saas-Shared-Lib.csproj" /> -->
   </ItemGroup>
 
