@@ -49,6 +49,12 @@ namespace Saas_Auth_Service.Controller
         }
 
         #region  public methods
+
+        /// <summary>
+        /// Create Project
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [Authorize(Roles = $"{UserType.MANAGER},{UserType.ADMIN}")]
         [HttpPost]
         public Response CreateProject(CreateProjectRequest request)
@@ -81,11 +87,15 @@ namespace Saas_Auth_Service.Controller
             return response;
         }
 
+        /// <summary>
+        /// Get Projects with Pagination and Filtering
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<GetAllProjects> GetProjectsAsync(GetProjectRequest request)
         {
             var cacheKey = "GetProjectsAsync";
-
             return await _cacheService.GetOrCreateAsync(cacheKey, async () =>
             {
                 var response = new GetAllProjects();
@@ -127,6 +137,11 @@ namespace Saas_Auth_Service.Controller
             }, expirationInMinutes: 3);
         }
 
+        /// <summary>
+        /// Get Project Details by Id
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns></returns>
         [HttpGet("{projectId}")]
         public async Task<GetProjectDetails> GetProjectByIdAsync(int projectId)
         {
@@ -162,10 +177,24 @@ namespace Saas_Auth_Service.Controller
             }, expirationInMinutes: 5);
         }
 
+        /// <summary>
+        /// Create Task
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Authorize(Roles = $"{UserType.MANAGER},{UserType.ADMIN}")]
         [HttpPost]
         public Response CreateTask(CreateTaskRequest request)
         {
             var response = new Response();
+            var project = _dbContext.Projects.Include(p=>p.Status).FirstOrDefaultAsync(p => p.Id == request.ProjectId).Result;
+            if (project == null)
+            {
+                response.IsSuccess = false;
+                response.Message = ErrorMessages.ProjectError;
+                return response;
+            }
+
             ProjectTask newTask = new()
             {
                 AssignedTo = request.AssignedTo,
@@ -174,12 +203,46 @@ namespace Saas_Auth_Service.Controller
                 Type = request.Type,
                 Duration = request.Duration,
                 ProjectId = request.ProjectId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Project = project,
+                CreatedById = Convert.ToInt32(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                Status = project.Status.Where(s => s.IsDefault).FirstOrDefault()!.StatusId,
             };
             _dbContext.ProjectTasks.Add(newTask);
             _dbContext.SaveChanges();
             response.IsSuccess = true;
-            response.Message = "Task created successfully.";
+            response.Message = "Task" + SuccessMessages.CreationSuccess;
+            return response;
+        }
+
+        /// <summary>
+        /// Create Project Status
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Authorize(Roles = $"{UserType.MANAGER},{UserType.ADMIN}")]
+        [HttpPost]
+        public Response CreateProjectStatus(CreateProjectStatus request)
+        {
+            var response = new Response();
+            var project = _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == request.ProjectId).Result;
+            if (project == null)
+            {
+                response.IsSuccess = false;
+                response.Message = ErrorMessages.ProjectError;
+                return response;
+            }
+            ProjectStatuses newStatus = new()
+            {
+                Status = request.Status,
+                IsDefault = request.IsDefault,
+                ProjectId = request.ProjectId,
+                Project = project,
+            };
+            _dbContext.Statuses.Add(newStatus);
+            _dbContext.SaveChanges();
+            response.IsSuccess = true;
+            response.Message = "Status " + SuccessMessages.CreationSuccess;
             return response;
         }
         #endregion
