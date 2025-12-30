@@ -163,8 +163,8 @@ namespace Saas_Auth_Service.Controller
                     Id = project.Id,
                     Name = project.Name,
                     Description = project.Description,
-                    StartDate = System.TimeZoneInfo.ConvertTimeFromUtc(project.StartDate,System.TimeZoneInfo.FindSystemTimeZoneById(project.TimeZone)),
-                    EndDate = System.TimeZoneInfo.ConvertTimeFromUtc(project.EndDate,System.TimeZoneInfo.FindSystemTimeZoneById(project.TimeZone)),
+                    StartDate = System.TimeZoneInfo.ConvertTimeFromUtc(project.StartDate, System.TimeZoneInfo.FindSystemTimeZoneById(project.TimeZone)),
+                    EndDate = System.TimeZoneInfo.ConvertTimeFromUtc(project.EndDate, System.TimeZoneInfo.FindSystemTimeZoneById(project.TimeZone)),
                     TeamMembers = project.TeamMembers.Select(tm => new UserResponse
                     {
                         Id = tm.Id,
@@ -187,11 +187,11 @@ namespace Saas_Auth_Service.Controller
         public Response CreateTask(CreateTaskRequest request)
         {
             var response = new Response();
-            var project = _dbContext.Projects.Include(p=>p.Status).FirstOrDefaultAsync(p => p.Id == request.ProjectId).Result;
+            var project = _dbContext.Projects.Include(p => p.Status).FirstOrDefaultAsync(p => p.Id == request.ProjectId).Result;
             if (project == null)
             {
                 response.IsSuccess = false;
-                response.Message = ErrorMessages.ProjectError;
+                response.Error = ErrorMessages.ProjectError;
                 return response;
             }
 
@@ -245,6 +245,106 @@ namespace Saas_Auth_Service.Controller
             response.Message = "Status " + SuccessMessages.CreationSuccess;
             return response;
         }
+        /// <summary>
+        /// Delete Project Status
+        /// </summary>
+        /// <param name="statusId"></param>
+        /// <returns></returns>
+        [HttpDelete("{statusId}")]
+        public Response DeleteProjectStatus(int statusId)
+        {
+            var response = new Response();
+            var status = _dbContext.Statuses.FirstOrDefaultAsync(s => s.StatusId == statusId).Result;
+            if (status == null)
+            {
+                response.IsSuccess = false;
+                response.Error = "Status " + ErrorMessages.NotFound;
+                return response;
+            }
+            _dbContext.Statuses.Remove(status);
+            _dbContext.SaveChanges();
+            response.IsSuccess = true;
+            response.Message = "Status " + SuccessMessages.DeleteSuccess;
+            return response;
+        }
+
+        /// <summary>
+        /// Edit Project Status
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Authorize(Roles = $"{UserType.MANAGER},{UserType.ADMIN}")]
+        [HttpPatch]
+        public Response EditProjectStatus(EditProjectStatus request)
+        {
+            var response = new Response();
+            var status = _dbContext.Statuses.FirstOrDefaultAsync(s => s.StatusId == request.StatusId).Result;
+            if (status == null)
+            {
+                response.IsSuccess = false;
+                response.Error = "Status " + ErrorMessages.NotFound;
+                return response;
+            }
+            if (request.Status != null)
+            {
+                status.Status = request.Status;
+            }
+            if (request.IsDefault != null)
+            {
+                status.IsDefault = (bool)request.IsDefault;
+            }
+            if (request.Position != null)
+            {
+                status.Position = (int)request.Position;
+            }
+            _dbContext.Statuses.Update(status);
+            _dbContext.SaveChanges();
+            response.IsSuccess = true;
+            response.Message = "Status " + SuccessMessages.UpdateSuccess;
+            return response;
+        }
+
+        /// <summary>
+        /// To Get the Project Status
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns></returns>
+        [Authorize(Roles = $"{UserType.ADMIN},{UserType.MANAGER}")]
+        [HttpGet("projectId")]
+        public Task<List<GetProjectStatus>> GetProjectStatuses(int projectId)
+        {
+            var response = _dbContext.Statuses.Where(x => x.ProjectId == projectId)
+                            .Select(status => new GetProjectStatus()
+                            {
+                                IsDefault = status.IsDefault,
+                                Position = status.Position,
+                                Status = status.Status,
+                                StatusId = status.StatusId
+                            }).ToListAsync();
+
+            return response;
+        }
+
+        /// <summary>
+        /// To get the Tasks
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <returns></returns>
+        [HttpGet("projectId")]
+        public Task<List<GetTask>> GetTasks(int projectId)
+        {
+            var response = _dbContext.ProjectTasks.Where(x=>x.TaskId == projectId)
+                            .Select(task => new GetTask()
+                            {
+                                Description = task.Description,
+                                Name = task.Name,
+                                Status = task.Status,
+                                TaskId = task.TaskId,
+                                Type = task.Type
+                            }).ToListAsync();
+            return response;
+        }
+
         #endregion
 
         #region private methods
