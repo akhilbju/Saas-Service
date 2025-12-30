@@ -23,13 +23,14 @@ public class CommonController : ControllerBase
         var cacheKey = "GetUsers";
         return await _cacheService.GetOrCreateAsync(cacheKey, async () =>
         {
-            return _dbContext.Users
+            var response = _dbContext.Users
                 .Select(u => new GetUsers
                 {
                     Id = u.Id,
                     Name = u.Username
                 })
                 .ToList();
+            return response;
         }, expirationInMinutes: 10 );
     }
 }

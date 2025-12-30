@@ -23,11 +23,17 @@ namespace Saas_Auth_Service.Controller
         /// </summary>
         private readonly AppDbContext _dbContext;
 
-        public AuthController(IJwtSettings jwtSettings, IPasswordHasherService passwordHasherService, AppDbContext dbContext)
+        /// <summary>
+        /// Cache Service
+        /// </summary>
+        private readonly ICacheService _cacheService;
+
+        public AuthController(IJwtSettings jwtSettings, IPasswordHasherService passwordHasherService, AppDbContext dbContext, ICacheService cacheService)
         {
             _jwtSettings = jwtSettings;
             _passwordHasherService = passwordHasherService;
             _dbContext = dbContext;
+            _cacheService = cacheService;
         }
 
         #region  public methods
@@ -50,6 +56,7 @@ namespace Saas_Auth_Service.Controller
             };
             this._dbContext.Users.Add(newUser);
             this._dbContext.SaveChanges();
+            _cacheService.Remove("GetUsers");
             res.IsSuccess = true;
             res.Message = "User created successfully";
             return res;
