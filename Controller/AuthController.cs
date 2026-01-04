@@ -28,6 +28,7 @@ namespace Saas_Auth_Service.Controller
         /// </summary>
         private readonly ICacheService _cacheService;
 
+        private readonly IAuthServices _authServices;
         public AuthController(IJwtSettings jwtSettings, IPasswordHasherService passwordHasherService, AppDbContext dbContext, ICacheService cacheService)
         {
             _jwtSettings = jwtSettings;
@@ -46,20 +47,7 @@ namespace Saas_Auth_Service.Controller
         [HttpPost]
         public Response CreateUser(CreateUser request)
         {
-            Response res = new();
-            User newUser = new()
-            {
-                Username = request.Username,
-                PasswordHash = _passwordHasherService.Hash(request.Password),
-                Email = request.Email,
-                UserType = request.UserType
-            };
-            this._dbContext.Users.Add(newUser);
-            this._dbContext.SaveChanges();
-            _cacheService.Remove("GetUsers");
-            res.IsSuccess = true;
-            res.Message = "User created successfully";
-            return res;
+           return _authServices.Register(request);
         }
 
         /// <summary>
