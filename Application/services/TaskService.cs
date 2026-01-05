@@ -1,0 +1,71 @@
+using System.Security.Claims;
+
+public class TaskService : ITaskService
+{
+    private readonly IProjectRepository _projectRepository;
+    private readonly ITaskRepository _taskRepository;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ICacheService _cacheService;
+
+    public TaskService(IProjectRepository projectRepository,
+                       ITaskRepository taskRepository, IHttpContextAccessor httpContextAccessor, ICacheService cacheService)
+    {
+        _projectRepository = projectRepository;
+        _taskRepository = taskRepository;
+        _httpContextAccessor = httpContextAccessor;
+        _cacheService = cacheService;
+    }
+
+    public Response CreateTask(CreateTaskRequest request)
+    {
+        var response = new Response();
+        var project = _projectRepository.GetByIdAsyncIncludeStatus(request.ProjectId).Result;
+        if (project == null)
+        {
+            response.IsSuccess = false;
+            response.Error = ErrorMessages.ProjectError;
+            return response;
+        }
+
+        ProjectTask newTask = new()
+        {
+            AssignedTo = request.AssignedTo,
+            Name = request.Name,
+            Description = request.Description,
+            Type = request.Type,
+            Duration = request.Duration,
+            ProjectId = request.ProjectId,
+            CreatedAt = DateTime.UtcNow,
+            Project = project,
+            CreatedById = Convert.ToInt32(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+            Status = project.Status.Where(s => s.IsDefault).FirstOrDefault()!.StatusId,
+        };
+        _taskRepository.AddTask(newTask);
+        _cacheService.Remove($"getTasks_{request.ProjectId}");
+        response.IsSuccess = true;
+        response.Message = "Task" + SuccessMessages.CreationSuccess;
+        return response;
+    }
+
+    public async Task<List<GetTask>> GetTasks(int projectId)
+    {
+        return await _cacheService.GetOrCreateAsync(
+            $"getTasks_{projectId}",
+            async () =>
+            {
+                var tasks = await _taskRepository.GetAllProjectTask(projectId);
+
+                return tasks.Select(x => new GetTask
+                {
+                    Description = x.Description,
+                    Name = x.Name,
+                    Status = x.Status,
+                    TaskId = x.TaskId,
+                    Type = x.Type
+                }).ToList();
+            },
+            3
+        );
+    }
+
+}

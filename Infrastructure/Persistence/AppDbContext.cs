@@ -57,7 +57,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<ProjectStatuses>()
             .HasOne(p => p.Project)
             .WithMany (s => s.Status)
-            .HasForeignKey(p => p.StatusId)
+            .HasForeignKey(p => p.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 
