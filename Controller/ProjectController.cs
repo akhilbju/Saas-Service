@@ -44,7 +44,7 @@ namespace Saas_Auth_Service.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GetAllProjects> GetProjectsAsync(GetProjectRequest request)
+        public async Task<GetAllProjects> GetProjects(GetProjectRequest request)
         {
             return await _projectServices.GetProjectsAsync(request);
         }
@@ -55,7 +55,7 @@ namespace Saas_Auth_Service.Controller
         /// <param name="projectId"></param>
         /// <returns></returns>
         [HttpGet("{projectId}")]
-        public async Task<GetProjectDetails> GetProjectByIdAsync(int projectId)
+        public async Task<GetProjectDetails> GetProjectDetails(int projectId)
         {
             return await _projectServices.GetProjectByIdAsync(projectId);
         }
