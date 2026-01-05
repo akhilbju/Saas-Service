@@ -4,14 +4,16 @@ public class TaskService : ITaskService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ITaskRepository _taskRepository;
-    private readonly IHttpContextAccessor _httpContextAccessor = new HttpContextAccessor();
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ICacheService _cacheService;
 
     public TaskService(IProjectRepository projectRepository,
-                       ITaskRepository taskRepository,IHttpContextAccessor httpContextAccessor)
+                       ITaskRepository taskRepository, IHttpContextAccessor httpContextAccessor, ICacheService cacheService)
     {
         _projectRepository = projectRepository;
         _taskRepository = taskRepository;
         _httpContextAccessor = httpContextAccessor;
+        _cacheService = cacheService;
     }
 
     public Response CreateTask(CreateTaskRequest request)
@@ -39,8 +41,31 @@ public class TaskService : ITaskService
             Status = project.Status.Where(s => s.IsDefault).FirstOrDefault()!.StatusId,
         };
         _taskRepository.AddTask(newTask);
+        _cacheService.Remove($"getTasks_{request.ProjectId}");
         response.IsSuccess = true;
         response.Message = "Task" + SuccessMessages.CreationSuccess;
         return response;
     }
+
+    public async Task<List<GetTask>> GetTasks(int projectId)
+    {
+        return await _cacheService.GetOrCreateAsync(
+            $"getTasks_{projectId}",
+            async () =>
+            {
+                var tasks = await _taskRepository.GetAllProjectTask(projectId);
+
+                return tasks.Select(x => new GetTask
+                {
+                    Description = x.Description,
+                    Name = x.Name,
+                    Status = x.Status,
+                    TaskId = x.TaskId,
+                    Type = x.Type
+                }).ToList();
+            },
+            3
+        );
+    }
+
 }

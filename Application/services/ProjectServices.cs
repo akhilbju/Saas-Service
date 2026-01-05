@@ -115,28 +115,84 @@ public class ProjectServices : IProjectServices
 
         }, expirationInMinutes: 5);
     }
-    
-     public Response CreateProjectStatus(CreateProjectStatus request)
+
+    public Response CreateProjectStatus(CreateProjectStatus request)
+    {
+        var response = new Response();
+        var project = _projectRepository.GetByIdAsync(request.ProjectId).Result;
+        if (project == null)
         {
-            var response = new Response();
-            var project = _projectRepository.GetByIdAsync(request.ProjectId).Result;
-            if (project == null)
-            {
-                response.IsSuccess = false;
-                response.Message = ErrorMessages.ProjectError;
-                return response;
-            }
-            ProjectStatuses newStatus = new()
-            {
-                Status = request.Status,
-                IsDefault = request.IsDefault,
-                ProjectId = request.ProjectId,
-                Project = project,
-            };
-            _projectStatusRepo.AddStatus(newStatus);
-            response.IsSuccess = true;
-            response.Message = "Status " + SuccessMessages.CreationSuccess;
+            response.IsSuccess = false;
+            response.Message = ErrorMessages.ProjectError;
             return response;
         }
+        ProjectStatuses newStatus = new()
+        {
+            Status = request.Status,
+            IsDefault = request.IsDefault,
+            ProjectId = request.ProjectId,
+            Project = project,
+        };
+        _projectStatusRepo.AddStatus(newStatus);
+        response.IsSuccess = true;
+        response.Message = "Status " + SuccessMessages.CreationSuccess;
+        return response;
+    }
+    public Response DeleteProjectStatus(int statusId)
+    {
+        var response = new Response();
+        var status = _projectStatusRepo.FindStatus(statusId);
+        if (status == null)
+        {
+            response.IsSuccess = false;
+            response.Error = "Status " + ErrorMessages.NotFound;
+            return response;
+        }
+        _projectStatusRepo.DeleteStatus(status);
+        response.IsSuccess = true;
+        response.Message = "Status " + SuccessMessages.DeleteSuccess;
+        return response;
+    }
 
+    public Response EditProjectStatus(EditProjectStatus request)
+    {
+        var response = new Response();
+        var status = _projectStatusRepo.FindStatus(request.StatusId);
+        if (status == null)
+        {
+            response.IsSuccess = false;
+            response.Error = "Status " + ErrorMessages.NotFound;
+            return response;
+        }
+        if (request.Status != null)
+        {
+            status.Status = request.Status;
+        }
+        if (request.IsDefault != null)
+        {
+            status.IsDefault = (bool)request.IsDefault;
+        }
+        if (request.Position != null)
+        {
+            status.Position = (int)request.Position;
+        }
+        _projectStatusRepo.UpdateStatus(status);
+        response.IsSuccess = true;
+        response.Message = "Status " + SuccessMessages.UpdateSuccess;
+        return response;
+    }
+
+    public List<GetProjectStatus> GetProjectStatuses(int projectId)
+    {
+        var statuses = _projectStatusRepo.GetAllStatuses(projectId);
+        var response = statuses.Select(status => new GetProjectStatus()
+                        {
+                            IsDefault = status.IsDefault,
+                            Position = status.Position,
+                            Status = status.Status,
+                            StatusId = status.StatusId
+                        }).ToList();
+
+        return response;
+    }
 }

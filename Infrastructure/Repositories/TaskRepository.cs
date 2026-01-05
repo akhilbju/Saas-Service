@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 public class TaskRepository : ITaskRepository
 {
     private readonly AppDbContext _context;
@@ -11,5 +13,10 @@ public class TaskRepository : ITaskRepository
     {
         _context.ProjectTasks.Add(task);
         _context.SaveChanges();
+    }
+
+    public async Task<List<ProjectTask>> GetAllProjectTask(int projectId)
+    {
+       return await _context.ProjectTasks.Where(x=>x.ProjectId == projectId).ToListAsync();
     }
 }

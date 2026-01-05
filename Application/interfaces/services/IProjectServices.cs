@@ -5,7 +5,6 @@ public interface IProjectServices
     Task<GetProjectDetails> GetProjectByIdAsync(int projectId);
     Response CreateProjectStatus(CreateProjectStatus request);
     Response DeleteProjectStatus(int statusId);
-    Task<List<GetTask>> GetTasks(int projectId);
-    Task<List<GetProjectStatus>> GetProjectStatuses(int projectId);
+    List<GetProjectStatus> GetProjectStatuses(int projectId);
     Response EditProjectStatus(EditProjectStatus request);
 }

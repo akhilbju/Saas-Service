@@ -91,19 +91,7 @@ namespace Saas_Auth_Service.Controller
         [HttpDelete("{statusId}")]
         public Response DeleteProjectStatus(int statusId)
         {
-            var response = new Response();
-            var status = _dbContext.Statuses.FirstOrDefaultAsync(s => s.StatusId == statusId).Result;
-            if (status == null)
-            {
-                response.IsSuccess = false;
-                response.Error = "Status " + ErrorMessages.NotFound;
-                return response;
-            }
-            _dbContext.Statuses.Remove(status);
-            _dbContext.SaveChanges();
-            response.IsSuccess = true;
-            response.Message = "Status " + SuccessMessages.DeleteSuccess;
-            return response;
+           return _projectServices.DeleteProjectStatus(statusId);
         }
 
         /// <summary>
@@ -115,31 +103,7 @@ namespace Saas_Auth_Service.Controller
         [HttpPatch]
         public Response EditProjectStatus(EditProjectStatus request)
         {
-            var response = new Response();
-            var status = _dbContext.Statuses.FirstOrDefaultAsync(s => s.StatusId == request.StatusId).Result;
-            if (status == null)
-            {
-                response.IsSuccess = false;
-                response.Error = "Status " + ErrorMessages.NotFound;
-                return response;
-            }
-            if (request.Status != null)
-            {
-                status.Status = request.Status;
-            }
-            if (request.IsDefault != null)
-            {
-                status.IsDefault = (bool)request.IsDefault;
-            }
-            if (request.Position != null)
-            {
-                status.Position = (int)request.Position;
-            }
-            _dbContext.Statuses.Update(status);
-            _dbContext.SaveChanges();
-            response.IsSuccess = true;
-            response.Message = "Status " + SuccessMessages.UpdateSuccess;
-            return response;
+           return _projectServices.EditProjectStatus(request);
         }
 
         /// <summary>
@@ -149,18 +113,9 @@ namespace Saas_Auth_Service.Controller
         /// <returns></returns>
         [Authorize(Roles = $"{UserType.ADMIN},{UserType.MANAGER}")]
         [HttpGet("projectId")]
-        public Task<List<GetProjectStatus>> GetProjectStatuses(int projectId)
+        public List<GetProjectStatus> GetProjectStatuses(int projectId)
         {
-            var response = _dbContext.Statuses.Where(x => x.ProjectId == projectId)
-                            .Select(status => new GetProjectStatus()
-                            {
-                                IsDefault = status.IsDefault,
-                                Position = status.Position,
-                                Status = status.Status,
-                                StatusId = status.StatusId
-                            }).ToListAsync();
-
-            return response;
+            return _projectServices.GetProjectStatuses(projectId);
         }
 
         /// <summary>
@@ -171,16 +126,7 @@ namespace Saas_Auth_Service.Controller
         [HttpGet("projectId")]
         public Task<List<GetTask>> GetTasks(int projectId)
         {
-            var response = _dbContext.ProjectTasks.Where(x=>x.TaskId == projectId)
-                            .Select(task => new GetTask()
-                            {
-                                Description = task.Description,
-                                Name = task.Name,
-                                Status = task.Status,
-                                TaskId = task.TaskId,
-                                Type = task.Type
-                            }).ToListAsync();
-            return response;
+            return _taskService.GetTasks(projectId);
         }
 
     }
