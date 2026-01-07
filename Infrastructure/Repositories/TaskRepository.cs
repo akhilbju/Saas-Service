@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 public class TaskRepository : ITaskRepository
@@ -19,4 +20,16 @@ public class TaskRepository : ITaskRepository
     {
        return await _context.ProjectTasks.Where(x=>x.ProjectId == projectId).ToListAsync();
     }
+
+    public void UpdateTask(ProjectTask task)
+    {
+         _context.ProjectTasks.Update(task);
+         _context.SaveChanges();
+    }
+
+    public  ProjectTask GetTaskById(int taskId)
+    {
+        return _context.ProjectTasks.Where(x=>x.TaskId == taskId).FirstOrDefault();
+    }
+
 }

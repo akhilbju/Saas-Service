@@ -129,5 +129,11 @@ namespace Saas_Auth_Service.Controller
             return _taskService.GetTasks(projectId);
         }
 
+        [HttpPost]
+        public Response UpdateTask(UpdateTaskRequest request)
+        {
+            return _taskService.UpdateTask(request);
+        }
+
     }
 }

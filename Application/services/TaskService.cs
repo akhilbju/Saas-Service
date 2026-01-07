@@ -68,4 +68,24 @@ public class TaskService : ITaskService
         );
     }
 
+    public Response UpdateTask(UpdateTaskRequest request)
+    {
+        Response response = new();
+        var task = this._taskRepository.GetTaskById(request.TaskId);
+        if(task == null)
+        {
+            response.Message = "Task" + ErrorMessages.NotFound;
+            return response;
+        }
+        if(string.IsNullOrEmpty(request.TaskName)) task.Name = request.TaskName;
+        if(string.IsNullOrEmpty(request.Description)) task.Description = request.Description;
+        if(request.Status != null) task.Status = (int)request.Status;
+        if(request.Duration != null) task.Duration = (int)request.Duration;
+        task.AssignedTo = request.Assignees;
+        _taskRepository.UpdateTask(task);
+        response.IsSuccess = true;
+        response.Message = "Task" + SuccessMessages.UpdateSuccess;
+        return response;
+    }
+
 }
