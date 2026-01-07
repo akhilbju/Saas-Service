@@ -129,5 +129,27 @@ namespace Saas_Auth_Service.Controller
             return _taskService.GetTasks(projectId);
         }
 
+        /// <summary>
+        /// To Edit the Task
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public Response UpdateTask(UpdateTaskRequest request)
+        {
+            return _taskService.UpdateTask(request);
+        }
+
+        /// <summary>
+        /// To get History of Task Status
+        /// </summary>
+        /// <param name="TaskId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public List<GetStatusHistory> GetTaskStatusHistories(int TaskId)
+        {
+            return _taskService.GetStatusHistoryofTask(TaskId);
+        }
+
     }
 }

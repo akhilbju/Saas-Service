@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,7 +31,7 @@ public class ProjectServices : IProjectServices
             Name = request.Name,
             Description = request.Description,
             CreatedAt = DateTime.UtcNow,
-            CreatedById = Convert.ToInt32(_httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+            CreatedById = Convert.ToInt32(_httpContextAccessor.HttpContext!.User.FindFirstValue(JwtRegisteredClaimNames.Sub)),
             StartDate = System.TimeZoneInfo.ConvertTimeToUtc(request.StartDate, System.TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone)),
             EndDate = System.TimeZoneInfo.ConvertTimeToUtc(request.EndDate, System.TimeZoneInfo.FindSystemTimeZoneById(request.TimeZone)),
             TimeZone = request.TimeZone,

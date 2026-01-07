@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<ProjectStatuses> Statuses { get; set; }
+    public DbSet<TaskStatusHistory> TaskStatusHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,28 +38,30 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ProjectTask>(x =>
-        {   
+        {
             x.HasKey(t => t.TaskId);
             x.Property(t => t.TaskId).ValueGeneratedOnAdd();
         });
-        
+
 
         modelBuilder.Entity<ProjectTask>()
             .HasOne(p => p.Project)
             .WithMany(t => t.Tasks)
             .HasForeignKey(p => p.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        modelBuilder.Entity<ProjectStatuses>(x=>
-        {   x.HasKey(s => s.StatusId);
+
+        modelBuilder.Entity<ProjectStatuses>(x =>
+        {
+            x.HasKey(s => s.StatusId);
             x.Property(s => s.StatusId).ValueGeneratedOnAdd();
         });
 
         modelBuilder.Entity<ProjectStatuses>()
             .HasOne(p => p.Project)
-            .WithMany (s => s.Status)
+            .WithMany(s => s.Status)
             .HasForeignKey(p => p.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
     }
+
 
 }
