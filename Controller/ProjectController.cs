@@ -146,9 +146,9 @@ namespace Saas_Auth_Service.Controller
         /// <param name="TaskId"></param>
         /// <returns></returns>
         [HttpGet]
-        public List<GetStatusHistory> GetTaskStatusHistories(int TaskId)
+        public async Task<List<GetStatusHistory>> GetTaskStatusHistories(int TaskId)
         {
-            return _taskService.GetStatusHistoryofTask(TaskId);
+            return await _taskService.GetStatusHistoryofTask(TaskId);
         }
 
     }

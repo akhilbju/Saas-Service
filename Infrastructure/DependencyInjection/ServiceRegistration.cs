@@ -19,6 +19,7 @@ public static class ServiceRegistration
         services.AddScoped<IProjectRepository,ProjectRepository>();
         services.AddScoped<ITaskRepository,TaskRepository>();
         services.AddScoped<IProjectStatusRepository,ProjectStatusRepository>();
+        services.AddScoped<ITaskHistoryRepository,TaskHistoryRepository>();
 
         // Security
         services.Configure<JwtConfigurationModel>(configuration.GetSection("Jwt"));
