@@ -86,8 +86,8 @@ public class TaskService : ITaskService
             response.Message = "Task" + ErrorMessages.NotFound;
             return response;
         }
-        if (string.IsNullOrEmpty(request.TaskName)) task.Name = request.TaskName;
-        if (string.IsNullOrEmpty(request.Description)) task.Description = request.Description;
+        if (!string.IsNullOrEmpty(request.TaskName)) task.Name = request.TaskName;
+        if (!string.IsNullOrEmpty(request.Description)) task.Description = request.Description;
         if (request.Status != null)
         {
             TaskStatusHistory newHistory = new()
@@ -149,6 +149,13 @@ public class TaskService : ITaskService
             3
         );
     }
-
+    public Response DeleteTask(int taskId)
+    {
+        Response response = new();
+        var task = _taskRepository.GetTaskById(taskId);
+        _taskRepository.DeleteTask(task);
+        response.IsSuccess = true;
+        return response;
+    }
 
 }

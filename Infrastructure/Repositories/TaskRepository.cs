@@ -32,4 +32,10 @@ public class TaskRepository : ITaskRepository
         return _context.ProjectTasks.Where(x=>x.TaskId == taskId).FirstOrDefault();
     }
 
+    public void DeleteTask(ProjectTask Task)
+    {
+        _context.ProjectTasks.Remove(Task);
+        _context.SaveChanges();
+    }
+
 }

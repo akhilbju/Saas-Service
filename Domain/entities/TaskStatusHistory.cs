@@ -6,5 +6,6 @@ public class TaskStatusHistory
     public int ToStatusId { get; set; }
     public DateTime ChangedAt { get; set; }
     public int ChangedBy { get; set; }
+    public ProjectTask Task { get; set; } 
 
 }

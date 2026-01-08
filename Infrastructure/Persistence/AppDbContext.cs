@@ -61,7 +61,12 @@ public class AppDbContext : DbContext
             .WithMany(s => s.Status)
             .HasForeignKey(p => p.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
-    }
 
+        modelBuilder.Entity<TaskStatusHistory>()
+        .HasOne(th => th.Task)
+        .WithMany(t => t.TaskHistories)
+        .HasForeignKey(th => th.TaskId)
+        .OnDelete(DeleteBehavior.Cascade);
+    }
 
 }

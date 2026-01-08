@@ -151,5 +151,16 @@ namespace Saas_Auth_Service.Controller
             return await _taskService.GetStatusHistoryofTask(TaskId);
         }
 
+        /// <summary>
+        /// to delete the task
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        public Response DeleteTask(int taskId)
+        {
+            return _taskService.DeleteTask(taskId);
+        }
+
     }
 }
