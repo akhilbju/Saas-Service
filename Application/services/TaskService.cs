@@ -102,13 +102,11 @@ public class TaskService : ITaskService
             };
             _taskHistoryRepository.AddHistory(newHistory);
             task.Status = (int)request.Status;
-
-
         }
         if (request.Duration != null) task.Duration = (int)request.Duration;
         task.AssignedTo = request.Assignees;
         _taskRepository.UpdateTask(task);
-        _cacheService.Remove($"getTasks_{task.ProjectId}");
+        _cacheService.Remove($"getTasks_{task.TaskId}");
         response.IsSuccess = true;
         response.Message = "Task " + SuccessMessages.UpdateSuccess;
         return response;
