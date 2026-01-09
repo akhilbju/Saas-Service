@@ -23,6 +23,7 @@ public class TaskService : ITaskService
         _taskHistoryRepository = taskHistoryRepository;
         _projectRepository = projectRepository;
         _userRepository = userRepository;
+        _statusRepository = statusRepository;
     }
 
     public Response CreateTask(CreateTaskRequest request)
